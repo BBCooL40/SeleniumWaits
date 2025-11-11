@@ -7,7 +7,7 @@ namespace Selenium_Waits_Ready.Common
 {
     public class TestBase
     {
-        // Изложено защитено свойство, което тестовете очакват (Driver с главна буква)
+        // Защитено свойство, достъпно за наследяване в тестовете
         protected IWebDriver Driver { get; private set; }
 
         [SetUp]
@@ -15,7 +15,7 @@ namespace Selenium_Waits_Ready.Common
         {
             var options = new ChromeOptions();
 
-            // Headless & CI-friendly args
+            // Headless & CI friendly конфигурация
             options.AddArgument("--headless=new");
             options.AddArgument("--no-sandbox");
             options.AddArgument("--disable-dev-shm-usage");
@@ -24,8 +24,8 @@ namespace Selenium_Waits_Ready.Common
             options.AddArgument("--disable-extensions");
             options.AddArgument("--disable-infobars");
 
-            // Ако е нужно да укажеш директно път до бинарния файл на Chromium:
-            // options.BinaryLocation = "/usr/bin/chromium-browser";
+            // 🔑 Това е критично за GitHub Actions (Ubuntu runner)
+            options.BinaryLocation = "/usr/bin/chromium-browser";
 
             Driver = new ChromeDriver(options);
             Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
@@ -40,7 +40,7 @@ namespace Selenium_Waits_Ready.Common
             }
             catch
             {
-                // безопасно игнориране на евентуални exceptions при затваряне
+                // Игнорираме евентуални грешки при затваряне на браузъра
             }
         }
     }
