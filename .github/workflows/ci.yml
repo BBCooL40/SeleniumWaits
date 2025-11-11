@@ -1,43 +1,51 @@
 name: CI - .NET build & test
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+on: [push, pull_request]
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        dotnet-version: [ '8.0.x', '7.0.x' ]
+        dotnet-version: ['8.0.x']
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 
-      - name: Install Chromium & Chromedriver (for Selenium)
+      - name: Install Chromium & Chromedriver
         run: |
           sudo apt-get update
           sudo apt-get install -y chromium-browser chromium-chromedriver
 
-      - name: Show chrome/chromedriver versions
+      - name: Restore & Build
         run: |
-          chromium-browser --version || true
-          chromedriver --version || true
+          dotnet restore
+          dotnet build --no-restore --configuration Release
 
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Build solution
-        run: dotnet build --no-restore --configuration Release
+      - name: Start web app in background
+        run: |
+          cd Selenium_Waits_Ready
+          nohup dotnet run --urls "http://localhost:5000" > app.log 2>&1 &
+          for i in {1..30}; do
+            if curl -sSf http://localhost:5000/ >/dev/null; then
+              echo "App is up"
+              break
+            fi
+            echo "Waiting for app..."
+            sleep 1
+          done
 
       - name: Run tests
         run: dotnet test --no-build --configuration Release
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/TestResults*.trx'
