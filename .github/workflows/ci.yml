@@ -40,6 +40,4 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Run tests
-        env:
-          # ако твоите тестове ползват някакви URL променливи, сетни ги тук
         run: dotnet test --no-build --configuration Release
