@@ -1,35 +1,47 @@
+﻿using System;
 using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 
-public class TestBase
+namespace Selenium_Waits_Ready.Common
 {
-    protected IWebDriver driver;
-
-    [SetUp]
-    public void Setup()
+    public class TestBase
     {
-        var options = new ChromeOptions();
+        // Изложено защитено свойство, което тестовете очакват (Driver с главна буква)
+        protected IWebDriver Driver { get; private set; }
 
-        // Headless & CI-friendly args
-        options.AddArgument("--headless=new"); // ??? "--headless=chrome" ?? ??-????? ??????
-        options.AddArgument("--no-sandbox");
-        options.AddArgument("--disable-dev-shm-usage");
-        options.AddArgument("--disable-gpu");
-        options.AddArgument("--window-size=1920,1080");
-        options.AddArgument("--disable-extensions");
-        options.AddArgument("--disable-infobars");
+        [SetUp]
+        public void Setup()
+        {
+            var options = new ChromeOptions();
 
-        // ??? chromedriver/Chromium ?? ?? ???????????? ???, ????? ?? ?????? BinaryLocation:
-        // options.BinaryLocation = "/usr/bin/chromium-browser";
+            // Headless & CI-friendly args
+            options.AddArgument("--headless=new");
+            options.AddArgument("--no-sandbox");
+            options.AddArgument("--disable-dev-shm-usage");
+            options.AddArgument("--disable-gpu");
+            options.AddArgument("--window-size=1920,1080");
+            options.AddArgument("--disable-extensions");
+            options.AddArgument("--disable-infobars");
 
-        driver = new ChromeDriver(options);
-        driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
-    }
+            // Ако е нужно да укажеш директно път до бинарния файл на Chromium:
+            // options.BinaryLocation = "/usr/bin/chromium-browser";
 
-    [TearDown]
-    public void TearDown()
-    {
-        driver?.Quit();
+            Driver = new ChromeDriver(options);
+            Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            try
+            {
+                Driver?.Quit();
+            }
+            catch
+            {
+                // безопасно игнориране на евентуални exceptions при затваряне
+            }
+        }
     }
 }
