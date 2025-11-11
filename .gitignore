@@ -1,0 +1,12 @@
+# Ignore Visual Studio cache
+.vs/
+*.user
+
+# Build output
+bin/
+obj/
+
+# Playwright artifacts
+playwright-report/
+test-results/
+*.zip
