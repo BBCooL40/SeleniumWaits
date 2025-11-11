@@ -2,13 +2,12 @@ name: CI - .NET build & test
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
 
 jobs:
   build-and-test:
-    name: Build & Test (matrix .NET)
     runs-on: ubuntu-latest
 
     strategy:
@@ -23,7 +22,6 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
-          cache: 'nuget'
 
       - name: Restore dependencies
         run: dotnet restore
@@ -31,13 +29,5 @@ jobs:
       - name: Build solution
         run: dotnet build --no-restore --configuration Release
 
-      - name: Run tests (produce TRX)
-        run: |
-          dotnet test --no-build --logger "trx;LogFileName=TestResults.trx" --verbosity minimal
-
-      - name: Upload Test Results artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: TestResults-${{ matrix.dotnet-version }}
-          path: '**/TestResults*.trx'
+      - name: Run tests
+        run: dotnet test --no-build --configuration Release
