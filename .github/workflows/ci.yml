@@ -23,6 +23,16 @@ jobs:
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 
+      - name: Install Chromium & Chromedriver (for Selenium)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser chromium-chromedriver
+
+      - name: Show chrome/chromedriver versions
+        run: |
+          chromium-browser --version || true
+          chromedriver --version || true
+
       - name: Restore dependencies
         run: dotnet restore
 
@@ -30,4 +40,6 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Run tests
+        env:
+          # ако твоите тестове ползват някакви URL променливи, сетни ги тук
         run: dotnet test --no-build --configuration Release
