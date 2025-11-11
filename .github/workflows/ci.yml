@@ -1,0 +1,43 @@
+name: CI - .NET build & test
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    name: Build & Test (matrix .NET)
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        dotnet-version: [ '8.0.x', '7.0.x' ]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+          cache: 'nuget'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build solution
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Run tests (produce TRX)
+        run: |
+          dotnet test --no-build --logger "trx;LogFileName=TestResults.trx" --verbosity minimal
+
+      - name: Upload Test Results artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TestResults-${{ matrix.dotnet-version }}
+          path: '**/TestResults*.trx'
